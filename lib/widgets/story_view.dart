@@ -60,9 +60,9 @@ class StoryItem {
     Duration? duration,
   }) {
     double contrast = ContrastHelper.contrast([
-      backgroundColor.red,
-      backgroundColor.green,
-      backgroundColor.blue,
+      backgroundColor.r,
+      backgroundColor.g,
+      backgroundColor.b,
     ], [
       255.0,
       255.0,
