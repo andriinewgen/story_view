@@ -79,10 +79,11 @@ class StoryItem {
             bottom: Radius.circular(roundedBottom ? 8 : 0),
           ),
         ),
-        padding: textOuterPadding?? EdgeInsets.symmetric(
-          horizontal: 24,
-          vertical: 16,
-        ),
+        padding: textOuterPadding ??
+            EdgeInsets.symmetric(
+              horizontal: 24,
+              vertical: 16,
+            ),
         child: Center(
           child: Text(
             title,
@@ -121,7 +122,6 @@ class StoryItem {
     return StoryItem(
       Container(
         key: key,
-        color: Colors.black,
         child: Stack(
           children: <Widget>[
             StoryImage.url(
@@ -140,12 +140,13 @@ class StoryItem {
                   margin: EdgeInsets.only(
                     bottom: 24,
                   ),
-                  padding: captionOuterPadding?? EdgeInsets.symmetric(
-                    horizontal: 24,
-                    vertical: 8,
-                  ),
+                  padding: captionOuterPadding ??
+                      EdgeInsets.symmetric(
+                        horizontal: 24,
+                        vertical: 8,
+                      ),
                   color: caption != null ? Colors.black54 : Colors.transparent,
-                  child: caption?? const SizedBox.shrink(),
+                  child: caption ?? const SizedBox.shrink(),
                 ),
               ),
             )
@@ -193,11 +194,12 @@ class StoryItem {
                 ),
                 Container(
                   margin: EdgeInsets.only(bottom: 16),
-                  padding: captionOuterPadding?? EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+                  padding: captionOuterPadding ??
+                      EdgeInsets.symmetric(horizontal: 24, vertical: 8),
                   child: Align(
                     alignment: Alignment.bottomLeft,
                     child: Container(
-                      child: caption?? const SizedBox.shrink(),
+                      child: caption ?? const SizedBox.shrink(),
                       width: double.infinity,
                     ),
                   ),
@@ -252,7 +254,7 @@ class StoryItem {
                     padding: EdgeInsets.symmetric(horizontal: 24, vertical: 8),
                     color:
                         caption != null ? Colors.black54 : Colors.transparent,
-                    child: caption?? const SizedBox.shrink(),
+                    child: caption ?? const SizedBox.shrink(),
                   ),
                 ),
               )
@@ -406,6 +408,7 @@ class StoryView extends StatefulWidget {
 
   /// Indicator Color
   final Color? indicatorColor;
+
   /// Indicator Foreground Color
   final Color? indicatorForegroundColor;
 
@@ -414,6 +417,8 @@ class StoryView extends StatefulWidget {
 
   /// Use this if you want to give outer padding to the indicator
   final EdgeInsetsGeometry indicatorOuterPadding;
+
+  final Color? backgroundColor;
 
   StoryView({
     required this.storyItems,
@@ -427,7 +432,11 @@ class StoryView extends StatefulWidget {
     this.indicatorColor,
     this.indicatorForegroundColor,
     this.indicatorHeight = IndicatorHeight.large,
-    this.indicatorOuterPadding = const EdgeInsets.symmetric(horizontal: 16, vertical: 8,),
+    this.indicatorOuterPadding = const EdgeInsets.symmetric(
+      horizontal: 16,
+      vertical: 8,
+    ),
+    this.backgroundColor,
   });
 
   @override
@@ -629,100 +638,97 @@ class StoryViewState extends State<StoryView> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      color: Colors.white,
-      child: Stack(
-        children: <Widget>[
-          _currentView,
-          Visibility(
-            visible: widget.progressPosition != ProgressPosition.none,
-            child: Align(
-              alignment: widget.progressPosition == ProgressPosition.top
-                  ? Alignment.topCenter
-                  : Alignment.bottomCenter,
-              child: SafeArea(
-                bottom: widget.inline ? false : true,
-                // we use SafeArea here for notched and bezeles phones
-                child: Container(
-                  padding: widget.indicatorOuterPadding,
-                  child: PageBar(
-                    widget.storyItems
-                        .map((it) => PageData(it!.duration, it.shown))
-                        .toList(),
-                    this._currentAnimation,
-                    key: UniqueKey(),
-                    indicatorHeight: widget.indicatorHeight,
-                    indicatorColor: widget.indicatorColor,
-                    indicatorForegroundColor: widget.indicatorForegroundColor,
-                  ),
+    return Stack(
+      children: <Widget>[
+        _currentView,
+        Visibility(
+          visible: widget.progressPosition != ProgressPosition.none,
+          child: Align(
+            alignment: widget.progressPosition == ProgressPosition.top
+                ? Alignment.topCenter
+                : Alignment.bottomCenter,
+            child: SafeArea(
+              bottom: widget.inline ? false : true,
+              // we use SafeArea here for notched and bezeles phones
+              child: Container(
+                padding: widget.indicatorOuterPadding,
+                child: PageBar(
+                  widget.storyItems
+                      .map((it) => PageData(it!.duration, it.shown))
+                      .toList(),
+                  this._currentAnimation,
+                  key: UniqueKey(),
+                  indicatorHeight: widget.indicatorHeight,
+                  indicatorColor: widget.indicatorColor,
+                  indicatorForegroundColor: widget.indicatorForegroundColor,
                 ),
               ),
             ),
           ),
-          Align(
-              alignment: Alignment.centerRight,
-              heightFactor: 1,
-              child: GestureDetector(
-                onTapDown: (details) {
-                  widget.controller.pause();
-                },
-                onTapCancel: () {
-                  widget.controller.play();
-                },
-                onTapUp: (details) {
-                  // if debounce timed out (not active) then continue anim
-                  if (_nextDebouncer?.isActive == false) {
-                    widget.controller.play();
-                  } else {
-                    widget.controller.next();
-                  }
-                },
-                onVerticalDragStart: widget.onVerticalSwipeComplete == null
-                    ? null
-                    : (details) {
-                        widget.controller.pause();
-                      },
-                onVerticalDragCancel: widget.onVerticalSwipeComplete == null
-                    ? null
-                    : () {
-                        widget.controller.play();
-                      },
-                onVerticalDragUpdate: widget.onVerticalSwipeComplete == null
-                    ? null
-                    : (details) {
-                        if (verticalDragInfo == null) {
-                          verticalDragInfo = VerticalDragInfo();
-                        }
-
-                        verticalDragInfo!.update(details.primaryDelta!);
-
-                        // TODO: provide callback interface for animation purposes
-                      },
-                onVerticalDragEnd: widget.onVerticalSwipeComplete == null
-                    ? null
-                    : (details) {
-                        widget.controller.play();
-                        // finish up drag cycle
-                        if (!verticalDragInfo!.cancel &&
-                            widget.onVerticalSwipeComplete != null) {
-                          widget.onVerticalSwipeComplete!(
-                              verticalDragInfo!.direction);
-                        }
-
-                        verticalDragInfo = null;
-                      },
-              )),
-          Align(
-            alignment: Alignment.centerLeft,
+        ),
+        Align(
+            alignment: Alignment.centerRight,
             heightFactor: 1,
-            child: SizedBox(
-                child: GestureDetector(onTap: () {
-                  widget.controller.previous();
-                }),
-                width: 70),
-          ),
-        ],
-      ),
+            child: GestureDetector(
+              onTapDown: (details) {
+                widget.controller.pause();
+              },
+              onTapCancel: () {
+                widget.controller.play();
+              },
+              onTapUp: (details) {
+                // if debounce timed out (not active) then continue anim
+                if (_nextDebouncer?.isActive == false) {
+                  widget.controller.play();
+                } else {
+                  widget.controller.next();
+                }
+              },
+              onVerticalDragStart: widget.onVerticalSwipeComplete == null
+                  ? null
+                  : (details) {
+                      widget.controller.pause();
+                    },
+              onVerticalDragCancel: widget.onVerticalSwipeComplete == null
+                  ? null
+                  : () {
+                      widget.controller.play();
+                    },
+              onVerticalDragUpdate: widget.onVerticalSwipeComplete == null
+                  ? null
+                  : (details) {
+                      if (verticalDragInfo == null) {
+                        verticalDragInfo = VerticalDragInfo();
+                      }
+
+                      verticalDragInfo!.update(details.primaryDelta!);
+
+                      // TODO: provide callback interface for animation purposes
+                    },
+              onVerticalDragEnd: widget.onVerticalSwipeComplete == null
+                  ? null
+                  : (details) {
+                      widget.controller.play();
+                      // finish up drag cycle
+                      if (!verticalDragInfo!.cancel &&
+                          widget.onVerticalSwipeComplete != null) {
+                        widget.onVerticalSwipeComplete!(
+                            verticalDragInfo!.direction);
+                      }
+
+                      verticalDragInfo = null;
+                    },
+            )),
+        Align(
+          alignment: Alignment.centerLeft,
+          heightFactor: 1,
+          child: SizedBox(
+              child: GestureDetector(onTap: () {
+                widget.controller.previous();
+              }),
+              width: 70),
+        ),
+      ],
     );
   }
 }
@@ -796,8 +802,11 @@ class PageBarState extends State<PageBar> {
                 right: widget.pages.last == it ? 0 : this.spacing),
             child: StoryProgressIndicator(
               isPlaying(it) ? widget.animation!.value : (it.shown ? 1 : 0),
-              indicatorHeight:
-                  widget.indicatorHeight == IndicatorHeight.large ? 5 : widget.indicatorHeight == IndicatorHeight.medium ? 3 : 2,
+              indicatorHeight: widget.indicatorHeight == IndicatorHeight.large
+                  ? 5
+                  : widget.indicatorHeight == IndicatorHeight.medium
+                      ? 3
+                      : 2,
               indicatorColor: widget.indicatorColor,
               indicatorForegroundColor: widget.indicatorForegroundColor,
             ),
@@ -831,11 +840,11 @@ class StoryProgressIndicator extends StatelessWidget {
         this.indicatorHeight,
       ),
       foregroundPainter: IndicatorOval(
-        this.indicatorForegroundColor?? Colors.white.withValues(alpha: 0.8),
+        this.indicatorForegroundColor ?? Colors.white.withValues(alpha: 0.8),
         this.value,
       ),
       painter: IndicatorOval(
-        this.indicatorColor?? Colors.white.withValues(alpha: 0.4),
+        this.indicatorColor ?? Colors.white.withValues(alpha: 0.4),
         1.0,
       ),
     );
