@@ -11,5 +11,5 @@ dependencies:
     sdk: flutter
   flutter_cache_manager: ^3.4.1
   rxdart: ^0.28.0
-  video_player: ^2.10.0
+  video_player: ^2.9.5
   collection: ^1.18.0
