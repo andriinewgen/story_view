@@ -60,9 +60,9 @@ class StoryItem {
     Duration? duration,
   }) {
     double contrast = ContrastHelper.contrast([
-      backgroundColor.r,
-      backgroundColor.g,
-      backgroundColor.b,
+      backgroundColor.red,
+      backgroundColor.green,
+      backgroundColor.blue,
     ], [
       255.0,
       255.0,
@@ -418,8 +418,6 @@ class StoryView extends StatefulWidget {
   /// Use this if you want to give outer padding to the indicator
   final EdgeInsetsGeometry indicatorOuterPadding;
 
-  final Color? backgroundColor;
-
   StoryView({
     required this.storyItems,
     required this.controller,
@@ -436,7 +434,6 @@ class StoryView extends StatefulWidget {
       horizontal: 16,
       vertical: 8,
     ),
-    this.backgroundColor,
   });
 
   @override
