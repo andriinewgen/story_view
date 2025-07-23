@@ -71,14 +71,12 @@ class StoryItem {
             bottom: Radius.circular(roundedBottom ? 8 : 0),
           ),
         ),
-        padding:
-            textOuterPadding ??
+        padding: textOuterPadding ??
             EdgeInsets.symmetric(horizontal: 24, vertical: 16),
         child: Center(
           child: Text(
             title,
-            style:
-                textStyle?.copyWith(
+            style: textStyle?.copyWith(
                   color: contrast > 1.8 ? Colors.white : Colors.black,
                 ) ??
                 TextStyle(
@@ -129,8 +127,7 @@ class StoryItem {
                 child: Container(
                   width: double.infinity,
                   margin: EdgeInsets.only(bottom: 24),
-                  padding:
-                      captionOuterPadding ??
+                  padding: captionOuterPadding ??
                       EdgeInsets.symmetric(horizontal: 24, vertical: 8),
                   color: caption != null ? Colors.black54 : Colors.transparent,
                   child: caption ?? const SizedBox.shrink(),
@@ -181,8 +178,7 @@ class StoryItem {
                 ),
                 Container(
                   margin: EdgeInsets.only(bottom: 16),
-                  padding:
-                      captionOuterPadding ??
+                  padding: captionOuterPadding ??
                       EdgeInsets.symmetric(horizontal: 24, vertical: 8),
                   child: Align(
                     alignment: Alignment.bottomLeft,
@@ -615,105 +611,102 @@ class StoryViewState extends State<StoryView> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      color: Colors.white,
-      child: Stack(
-        children: <Widget>[
-          _currentView,
-          Visibility(
-            visible: widget.progressPosition != ProgressPosition.none,
-            child: Align(
-              alignment: widget.progressPosition == ProgressPosition.top
-                  ? Alignment.topCenter
-                  : Alignment.bottomCenter,
-              child: SafeArea(
-                bottom: widget.inline ? false : true,
-                // we use SafeArea here for notched and bezeles phones
-                child: Container(
-                  padding: widget.indicatorOuterPadding,
-                  child: PageBar(
-                    widget.storyItems
-                        .map((it) => PageData(it!.duration, it.shown))
-                        .toList(),
-                    this._currentAnimation,
-                    key: UniqueKey(),
-                    indicatorHeight: widget.indicatorHeight,
-                    indicatorColor: widget.indicatorColor,
-                    indicatorForegroundColor: widget.indicatorForegroundColor,
-                  ),
+    return Stack(
+      children: <Widget>[
+        _currentView,
+        Visibility(
+          visible: widget.progressPosition != ProgressPosition.none,
+          child: Align(
+            alignment: widget.progressPosition == ProgressPosition.top
+                ? Alignment.topCenter
+                : Alignment.bottomCenter,
+            child: SafeArea(
+              bottom: widget.inline ? false : true,
+              // we use SafeArea here for notched and bezeles phones
+              child: Container(
+                padding: widget.indicatorOuterPadding,
+                child: PageBar(
+                  widget.storyItems
+                      .map((it) => PageData(it!.duration, it.shown))
+                      .toList(),
+                  this._currentAnimation,
+                  key: UniqueKey(),
+                  indicatorHeight: widget.indicatorHeight,
+                  indicatorColor: widget.indicatorColor,
+                  indicatorForegroundColor: widget.indicatorForegroundColor,
                 ),
               ),
             ),
           ),
-          Align(
-            alignment: Alignment.centerRight,
-            heightFactor: 1,
-            child: GestureDetector(
-              onTapDown: (details) {
-                widget.controller.pause();
-              },
-              onTapCancel: () {
+        ),
+        Align(
+          alignment: Alignment.centerRight,
+          heightFactor: 1,
+          child: GestureDetector(
+            onTapDown: (details) {
+              widget.controller.pause();
+            },
+            onTapCancel: () {
+              widget.controller.play();
+            },
+            onTapUp: (details) {
+              // if debounce timed out (not active) then continue anim
+              if (_nextDebouncer?.isActive == false) {
                 widget.controller.play();
-              },
-              onTapUp: (details) {
-                // if debounce timed out (not active) then continue anim
-                if (_nextDebouncer?.isActive == false) {
-                  widget.controller.play();
-                } else {
-                  widget.controller.next();
-                }
-              },
-              onVerticalDragStart: widget.onVerticalSwipeComplete == null
-                  ? null
-                  : (details) {
-                      widget.controller.pause();
-                    },
-              onVerticalDragCancel: widget.onVerticalSwipeComplete == null
-                  ? null
-                  : () {
-                      widget.controller.play();
-                    },
-              onVerticalDragUpdate: widget.onVerticalSwipeComplete == null
-                  ? null
-                  : (details) {
-                      if (verticalDragInfo == null) {
-                        verticalDragInfo = VerticalDragInfo();
-                      }
+              } else {
+                widget.controller.next();
+              }
+            },
+            onVerticalDragStart: widget.onVerticalSwipeComplete == null
+                ? null
+                : (details) {
+                    widget.controller.pause();
+                  },
+            onVerticalDragCancel: widget.onVerticalSwipeComplete == null
+                ? null
+                : () {
+                    widget.controller.play();
+                  },
+            onVerticalDragUpdate: widget.onVerticalSwipeComplete == null
+                ? null
+                : (details) {
+                    if (verticalDragInfo == null) {
+                      verticalDragInfo = VerticalDragInfo();
+                    }
 
-                      verticalDragInfo!.update(details.primaryDelta!);
+                    verticalDragInfo!.update(details.primaryDelta!);
 
-                      // TODO: provide callback interface for animation purposes
-                    },
-              onVerticalDragEnd: widget.onVerticalSwipeComplete == null
-                  ? null
-                  : (details) {
-                      widget.controller.play();
-                      // finish up drag cycle
-                      if (!verticalDragInfo!.cancel &&
-                          widget.onVerticalSwipeComplete != null) {
-                        widget.onVerticalSwipeComplete!(
-                          verticalDragInfo!.direction,
-                        );
-                      }
+                    // TODO: provide callback interface for animation purposes
+                  },
+            onVerticalDragEnd: widget.onVerticalSwipeComplete == null
+                ? null
+                : (details) {
+                    widget.controller.play();
+                    // finish up drag cycle
+                    if (!verticalDragInfo!.cancel &&
+                        widget.onVerticalSwipeComplete != null) {
+                      widget.onVerticalSwipeComplete!(
+                        verticalDragInfo!.direction,
+                      );
+                    }
 
-                      verticalDragInfo = null;
-                    },
-            ),
+                    verticalDragInfo = null;
+                  },
           ),
-          Align(
-            alignment: Alignment.centerLeft,
-            heightFactor: 1,
-            child: SizedBox(
-              child: GestureDetector(
-                onTap: () {
-                  widget.controller.previous();
-                },
-              ),
-              width: 70,
+        ),
+        Align(
+          alignment: Alignment.centerLeft,
+          heightFactor: 1,
+          child: SizedBox(
+            child: GestureDetector(
+              onTap: () {
+                widget.controller.previous();
+              },
             ),
+            width: 70,
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }
@@ -791,8 +784,8 @@ class PageBarState extends State<PageBar> {
               indicatorHeight: widget.indicatorHeight == IndicatorHeight.large
                   ? 5
                   : widget.indicatorHeight == IndicatorHeight.medium
-                  ? 3
-                  : 2,
+                      ? 3
+                      : 2,
               indicatorColor: widget.indicatorColor,
               indicatorForegroundColor: widget.indicatorForegroundColor,
             ),
